@@ -61,6 +61,37 @@ someMap:
 	assert.Equal(t, expected, ConcatYAML(startSep, startSep))
 }
 
+func TestConcatYamlDoesNotTreatSeparatorPrefixAsMarker(t *testing.T) {
+	scalar := `---not-a-marker`
+	expected := `this: is
+some: yaml
+---
+---not-a-marker`
+	assert.Equal(t, expected, ConcatYAML(noSep, scalar))
+}
+
+func TestConcatYamlDoesNotTreatSeparatorSuffixAsMarker(t *testing.T) {
+	scalar := `value: foo---`
+	expected := `value: foo---
+---
+this: is
+some: yaml`
+	assert.Equal(t, expected, ConcatYAML(scalar, noSep))
+}
+
+func TestConcatYamlSeparatorComment(t *testing.T) {
+	endComment := `iLoveYaml: meh
+--- # end of document`
+	startComment := `--- # start of document
+someMap:
+    stuff: yes`
+	expected := `iLoveYaml: meh
+--- # start of document
+someMap:
+    stuff: yes`
+	assert.Equal(t, expected, ConcatYAML(endComment, startComment))
+}
+
 func TestConcatManyYamls(t *testing.T) {
 	expected := `---
 someMap:

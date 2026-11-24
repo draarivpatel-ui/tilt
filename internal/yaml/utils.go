@@ -28,15 +28,37 @@ func concatYAML(y1, y2 string) string {
 	if !hasEndingSeparator(y1) && !hasStartingSeparator(y2) {
 		return fmt.Sprintf("%s\n%s\n%s", y1, separator, y2)
 	} else if hasEndingSeparator(y1) && hasStartingSeparator(y2) {
-		y1 = strings.TrimSpace(strings.TrimSuffix(y1, separator))
+		y1 = trimEndingSeparator(y1)
 	}
 	return fmt.Sprintf("%s\n%s", y1, y2)
 }
 
 func hasStartingSeparator(y string) bool {
-	return strings.HasPrefix(y, separator)
+	line, _, _ := strings.Cut(y, "\n")
+	return isSeparatorLine(line)
 }
 
 func hasEndingSeparator(y string) bool {
-	return strings.HasSuffix(y, separator)
+	line := y[strings.LastIndex(y, "\n")+1:]
+	return isBareSeparatorLine(line)
+}
+
+func trimEndingSeparator(y string) string {
+	return strings.TrimSpace(y[:strings.LastIndex(y, "\n")+1])
+}
+
+func isSeparatorLine(line string) bool {
+	line = strings.TrimRight(line, " \t\r")
+	return line == separator || strings.HasPrefix(line, separator+" ") || strings.HasPrefix(line, separator+"\t")
+}
+
+func isBareSeparatorLine(line string) bool {
+	line = strings.TrimRight(line, " \t\r")
+	if line == separator {
+		return true
+	}
+	if !isSeparatorLine(line) {
+		return false
+	}
+	return strings.HasPrefix(strings.TrimSpace(line[len(separator):]), "#")
 }
